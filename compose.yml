@@ -1,0 +1,25 @@
+services:
+  wyoming-whisper:
+    image: ghcr.io/chreece/whisper-rocm:latest
+    container_name: wyoming-whisper
+    restart: unless-stopped
+    network_mode: host
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    environment:
+      # CTranslate2 uses the device name "cuda" for its ROCm backend, too.
+      WYO_WHISPER_MODEL: large-v3
+      WYO_WHISPER_LANGUAGE: el
+      WYO_WHISPER_DEVICE: cuda
+      WYO_WHISPER_COMPUTE_TYPE: float16
+      WYO_WHISPER_BEAM_SIZE: "2"
+      CT2_CUDA_ALLOCATOR: cub_caching
+      GPU_MAX_HW_QUEUES: "1"
+    volumes:
+      - whisper_data:/data
+      - /etc/localtime:/etc/localtime:ro
+
+volumes:
+  whisper_data:
+

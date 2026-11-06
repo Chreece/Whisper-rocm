@@ -1,0 +1,50 @@
+{
+  "audio_compatibility_source": {
+    "sha256": "60a1d8638f718cbf6d245aed3e5a5aa61c1f822a0b0fe9b48a7c928d47c23909",
+    "url": "https://raw.githubusercontent.com/SYSTRAN/faster-whisper/65882eee9f5cdbeeb2d877f1131d48cf241b327d/faster_whisper/audio.py"
+  },
+  "components": {
+    "ctranslate2": {
+      "archive": {
+        "sha256": "ff1a4d081c1f3c57ca7677152ae5f264735c3230a463868ded1fd39839f238e3",
+        "url": "https://github.com/OpenNMT/CTranslate2/releases/download/v4.8.5/rocm-python-wheels-Linux.zip"
+      },
+      "repository": "OpenNMT/CTranslate2",
+      "revision": "7f59ae114cba0f7d5fb1fe6099142e4c3b0037c8",
+      "tag": "v4.8.5",
+      "version": "4.8.5"
+    },
+    "faster-whisper": {
+      "repository": "SYSTRAN/faster-whisper",
+      "revision": "65882eee9f5cdbeeb2d877f1131d48cf241b327d",
+      "tag": "v1.2.1",
+      "version": "1.2.1",
+      "wheel": {
+        "sha256": "79a66ad50688c0b794dd501dc340a736992a6342f7f95e5811be60b5224a26a7",
+        "url": "https://files.pythonhosted.org/packages/05/99/49ee85903dee060d9f08297b4a342e5e0bcfca2f027a07b4ee0a38ab13f9/faster_whisper-1.2.1-py3-none-any.whl"
+      }
+    },
+    "wyoming-faster-whisper": {
+      "repository": "OHF-Voice/wyoming-faster-whisper",
+      "revision": "8c9142ecfa8fdb5b3cea82ad1dcad71cc24ebab9",
+      "tag": "v3.8.1",
+      "version": "3.8.1",
+      "wheel": {
+        "sha256": "2c7e668f89ab726e9c93b7eeb4d8b93471e4eda84f3834505e50b30a82ae9e8e",
+        "url": "https://github.com/OHF-Voice/wyoming-faster-whisper/releases/download/v3.8.1/wyoming_faster_whisper-3.8.1-py3-none-any.whl"
+      }
+    }
+  },
+  "constraints": [
+    "av<19"
+  ],
+  "resolved_at": "2026-11-06T11:15:39+00:00",
+  "runtime": {
+    "architecture": "amd64",
+    "image": "docker.io/rocm/dev-ubuntu-24.04:7.2.1@sha256:fe29799baf7b8db986a707110c15579dc0fb6e39d48973fbb82dfc33a0c7e179",
+    "rocm_version": "7.2.1",
+    "source": "https://raw.githubusercontent.com/OpenNMT/CTranslate2/7f59ae114cba0f7d5fb1fe6099142e4c3b0037c8/docker/Dockerfile_rocm",
+    "source_sha256": "3908e802572187901393a3bf2573d69e679646586000083c98d3e8daa54af882"
+  },
+  "schema": 1
+}

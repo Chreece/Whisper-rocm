@@ -1,0 +1,157 @@
+name: Build and publish current upstream Whisper ROCm
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "31 3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whisper-rocm-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Test resolver and ROCm wheel selection
+        run: python3 -m unittest discover -s tests -v
+      - name: Resolve current released upstreams and AMD runtime
+        id: sources
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/resolve_upstreams.py --github-output "$GITHUB_OUTPUT"
+      - name: Make room for ROCm on the disposable runner
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          df -h /
+      - uses: docker/setup-buildx-action@v3
+      - name: Build local candidate without publishing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          pull: true
+          load: true
+          push: false
+          tags: whisper-rocm:candidate
+          build-args: |
+            ROCM_BASE=${{ steps.sources.outputs.base }}
+            SOURCE_REVISION=${{ github.sha }}
+          # Rebuild apt and Python layers daily to include compatible security fixes.
+          no-cache: true
+          provenance: false
+      - name: Verify installed ROCm library, audio decode, and upstream CLI
+        run: |
+          mkdir -p build-evidence
+          docker run --rm --entrypoint python3 whisper-rocm:candidate \
+            /opt/whisper-rocm/verify_image.py | tee build-evidence/image-check.json
+          container=$(docker create whisper-rocm:candidate)
+          for file in sources.lock.json pip-report.json installed-packages.json rocm-wheel.json; do
+            docker cp "$container:/opt/whisper-rocm/$file" "build-evidence/$file"
+          done
+          docker rm "$container"
+      - name: Verify a real Wyoming server and CPU tiny-model transcription
+        run: |
+          set -euo pipefail
+          smoke_name="whisper-rocm-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          cleanup() {
+            docker logs "$smoke_name" > build-evidence/wyoming-smoke.log 2>&1 || true
+            docker rm -f "$smoke_name" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          docker run -d --name "$smoke_name" whisper-rocm:candidate \
+            --model tiny.en --device cpu --compute-type int8 --language en --beam-size 1
+          ready=false
+          for attempt in $(seq 1 90); do
+            if docker exec "$smoke_name" python3 -m wyoming_faster_whisper.health_check --timeout 2; then
+              ready=true
+              break
+            fi
+            if [ "$(docker inspect --format '{{.State.Running}}' "$smoke_name")" != true ]; then
+              exit 1
+            fi
+            sleep 5
+          done
+          [ "$ready" = true ]
+          docker exec "$smoke_name" python3 /opt/whisper-rocm/smoke_wyoming.py \
+            | tee build-evidence/wyoming-check.json
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish the verified image
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          version="build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker tag whisper-rocm:candidate "$image:$version"
+          docker push "$image:$version"
+          current=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "::warning::main changed during this build; immutable image saved, latest left unchanged"
+            exit 0
+          fi
+          docker tag whisper-rocm:candidate "$image:latest"
+          docker push "$image:latest"
+          docker image inspect "$image:latest" --format '{{json .RepoDigests}}' \
+            > build-evidence/published-digests.json
+      - name: Record the successfully published upstream source lock
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          # Preserve concurrent human edits. Never force-push this repository.
+          current=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "::warning::main changed during the build; source-lock commit deferred to the next run"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sources.lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update verified upstream source lock'
+            if ! git push origin HEAD:main; then
+              echo "::warning::Source-lock push was rejected; no history was overwritten"
+            fi
+          fi
+      - name: Verify anonymous pulls
+        if: github.event_name != 'pull_request'
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          public_config=$(mktemp -d)
+          trap 'rm -rf "$public_config"' EXIT
+          if DOCKER_CONFIG="$public_config" docker manifest inspect "$image:latest" > /dev/null; then
+            echo 'Anonymous pull available' > build-evidence/anonymous-pull.txt
+          else
+            echo 'Package requires a one-time visibility change to Public' > build-evidence/anonymous-pull.txt
+            echo "::warning::Set the new GHCR package visibility to Public to allow docker compose pull without login"
+          fi
+      - name: Save exact build inputs and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whisper-rocm-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            sources.lock.json
+            build-evidence/
+          retention-days: 14
+          if-no-files-found: warn
+
