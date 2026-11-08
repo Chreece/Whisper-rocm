@@ -38,7 +38,7 @@
   "constraints": [
     "av<19"
   ],
-  "resolved_at": "2026-11-07T10:36:38+00:00",
+  "resolved_at": "2026-11-08T10:42:09+00:00",
   "runtime": {
     "architecture": "amd64",
     "image": "docker.io/rocm/dev-ubuntu-24.04:7.2.1@sha256:fe29799baf7b8db986a707110c15579dc0fb6e39d48973fbb82dfc33a0c7e179",
