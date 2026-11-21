@@ -26,19 +26,19 @@
     },
     "wyoming-faster-whisper": {
       "repository": "OHF-Voice/wyoming-faster-whisper",
-      "revision": "daf26fd06fa8d97d89a060b2e69bb67912b32d1f",
-      "tag": "v3.9.0",
-      "version": "3.9.0",
+      "revision": "80c7a9e077af65d941dd0a1a2b0aa67c54b84772",
+      "tag": "v3.9.1",
+      "version": "3.9.1",
       "wheel": {
-        "sha256": "8c4fede2ded6341d327e25bb3cb517a0774cf3e513ade804e1acaf44bab1a8cb",
-        "url": "https://github.com/OHF-Voice/wyoming-faster-whisper/releases/download/v3.9.0/wyoming_faster_whisper-3.9.0-py3-none-any.whl"
+        "sha256": "36b26d14744bc515cae937f2fc4ad3a60f2a5406bf265452cdfa0759a1e65859",
+        "url": "https://github.com/OHF-Voice/wyoming-faster-whisper/releases/download/v3.9.1/wyoming_faster_whisper-3.9.1-py3-none-any.whl"
       }
     }
   },
   "constraints": [
     "av<19"
   ],
-  "resolved_at": "2026-11-18T12:06:29+00:00",
+  "resolved_at": "2026-11-21T11:37:51+00:00",
   "runtime": {
     "architecture": "amd64",
     "image": "docker.io/rocm/dev-ubuntu-24.04:7.2.1@sha256:fe29799baf7b8db986a707110c15579dc0fb6e39d48973fbb82dfc33a0c7e179",
