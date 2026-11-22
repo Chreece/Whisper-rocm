@@ -6,13 +6,13 @@
   "components": {
     "ctranslate2": {
       "archive": {
-        "sha256": "0a9ad24145fe671628d7524602241b3743a12d1487489f075f5de91f68aa2837",
-        "url": "https://github.com/OpenNMT/CTranslate2/releases/download/v4.9.0/rocm-python-wheels-Linux.zip"
+        "sha256": "283c6800475961a13120f8ad2761a00ebe645aac3c155a6794f6d784b1111593",
+        "url": "https://github.com/OpenNMT/CTranslate2/releases/download/v4.9.1/rocm-python-wheels-Linux.zip"
       },
       "repository": "OpenNMT/CTranslate2",
-      "revision": "a22ba1c63ee35d1a0d25db149aa2a66d36a6a732",
-      "tag": "v4.9.0",
-      "version": "4.9.0"
+      "revision": "88e735ac42a2a97c7c10daec4e7ce9db49edf562",
+      "tag": "v4.9.1",
+      "version": "4.9.1"
     },
     "faster-whisper": {
       "repository": "SYSTRAN/faster-whisper",
@@ -38,12 +38,12 @@
   "constraints": [
     "av<19"
   ],
-  "resolved_at": "2026-11-21T11:37:51+00:00",
+  "resolved_at": "2026-11-22T11:51:13+00:00",
   "runtime": {
     "architecture": "amd64",
     "image": "docker.io/rocm/dev-ubuntu-24.04:7.2.1@sha256:fe29799baf7b8db986a707110c15579dc0fb6e39d48973fbb82dfc33a0c7e179",
     "rocm_version": "7.2.1",
-    "source": "https://raw.githubusercontent.com/OpenNMT/CTranslate2/a22ba1c63ee35d1a0d25db149aa2a66d36a6a732/docker/Dockerfile_rocm",
+    "source": "https://raw.githubusercontent.com/OpenNMT/CTranslate2/88e735ac42a2a97c7c10daec4e7ce9db49edf562/docker/Dockerfile_rocm",
     "source_sha256": "ecce8fa67ab5bdc3de7554758958d79e4ba102f987904ddf1aa0f08a4a0d3076"
   },
   "schema": 1
